@@ -47,12 +47,12 @@ static int __carry_length(
     return be->len - (pos - be->str);
 }
 
-static double __read_string_int(
+static long int __read_string_int(
     const char *ptr,
     const char **end
 )
 {
-    double val;
+    long int val = 0;
 
     assert(isdigit(*ptr));
 
