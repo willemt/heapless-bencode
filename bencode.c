@@ -169,7 +169,7 @@ static const char *__read_string_len(
 
     ptr++;
 
-    assert(0 < *slen);
+    assert(0 <= *slen);
 
     return ptr;
 }

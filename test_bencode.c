@@ -615,3 +615,36 @@ void TestBencodeDictGetStartAndLen(
     CuAssertTrue(tc, !strncmp(ren, expected, len));
     free(str);
 }
+
+/*----------------------------------------------------------------------------*/
+
+void TestBencodeStringValueIsZeroLength(
+    CuTest * tc
+)
+{
+
+    bencode_t ben, benk;
+
+    char *str = strdup("d8:intervali1800e5:peers0:e");
+
+    const char *key;
+
+    const char *val;
+
+    int len, klen, vlen;
+
+    bencode_init(&ben, str, strlen(str));
+
+    CuAssertTrue(tc, 1 == bencode_is_dict(&ben));
+    CuAssertTrue(tc, 1 == bencode_dict_has_next(&ben));
+
+    bencode_dict_get_next(&ben, &benk, &key, &klen);
+    CuAssertTrue(tc, !strncmp(key, "interval", klen));
+    CuAssertTrue(tc, 1 == bencode_dict_has_next(&ben));
+    bencode_dict_get_next(&ben, &benk, &key, &klen);
+    CuAssertTrue(tc, !strncmp(key, "peers", klen));
+    bencode_string_value(&benk, &val, &vlen);
+    CuAssertTrue(tc, !strncmp(val, "", vlen));
+
+    free(str);
+}
