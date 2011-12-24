@@ -214,6 +214,9 @@ void TestBencodeStringValue2(
     free(str);
 }
 
+/**
+ * The string value function errors when the string is of insuficient length
+ * */
 void TestBencodeStringInvalid(
     CuTest * tc
 )
@@ -243,6 +246,42 @@ void TestBencodeIsStringEmpty(
 
     bencode_init(&ben, str, strlen(str));
     CuAssertTrue(tc, 0 == bencode_is_string(&ben));
+    free(str);
+}
+
+void TestBencodeStringHandlesNonAscii0(
+    CuTest * tc
+)
+{
+    bencode_t ben;
+
+    char *str = strdup("6:xxxxxx");
+
+    const char *ren;
+
+    char *ptr;
+
+    int len;
+
+    /*  127.0.0.1:80 */
+    str[2] = 127;
+    str[3] = 0;
+    str[4] = 0;
+    str[5] = 1;
+    str[6] = 0;
+    str[7] = 80;
+
+    ptr = str;
+    bencode_init(&ben, str, 8);
+
+    bencode_string_value(&ben, &ren, &len);
+    CuAssertTrue(tc, ren[0] == 127);
+    CuAssertTrue(tc, ren[1] == 0);
+    CuAssertTrue(tc, ren[2] == 0);
+    CuAssertTrue(tc, ren[3] == 1);
+    CuAssertTrue(tc, ren[4] == 0);
+    CuAssertTrue(tc, ren[5] == 80);
+    bencode_done(&ben);
     free(str);
 }
 
@@ -309,6 +348,26 @@ void TestBencodeListGetNext(
     free(str);
 }
 
+void TestBencodeListGetNextTwiceWhereOnlyOneAvailable(
+    CuTest * tc
+)
+{
+    bencode_t ben;
+
+    bencode_t ben2;
+
+    char *str = strdup("l4:teste");
+
+    const char *ren;
+
+    int len;
+
+    bencode_init(&ben, str, strlen(str));
+    CuAssertTrue(tc, 1 == bencode_list_get_next(&ben, &ben2));
+    CuAssertTrue(tc, 0 == bencode_list_get_next(&ben, &ben2));
+    free(str);
+}
+
 void TestBencodeListGetNextTwice(
     CuTest * tc
 )
@@ -335,6 +394,28 @@ void TestBencodeListGetNextTwice(
 
 //    printf("%s\n", str);
 //    CuAssertTrue(tc, !strcmp("l4:test3:fooe", str));
+    free(str);
+}
+
+void TestBencodeListGetNextAtInvalidEnd(
+    CuTest * tc
+)
+{
+    bencode_t ben;
+
+    bencode_t ben2;
+
+    char *str = strdup("l4:testg");
+
+    const char *ren;
+
+    int len;
+
+    bencode_init(&ben, str, strlen(str));
+
+    CuAssertTrue(tc, 1 == bencode_list_get_next(&ben, &ben2));
+    CuAssertTrue(tc, -1 == bencode_list_get_next(&ben, &ben2));
+
     free(str);
 }
 
@@ -371,7 +452,7 @@ void TestBencodeDictHasNext(
 {
     bencode_t ben;
 
-    char *str = strdup("l4:test3:fooe");
+    char *str = strdup("d4:test3:fooe");
 
     bencode_init(&ben, str, strlen(str));
 
@@ -391,17 +472,42 @@ void TestBencodeDictGetNext(
 
     const char *ren;
 
-    int len;
+    int len, ret;
 
     bencode_init(&ben, str, strlen(str));
 
-    bencode_dict_get_next(&ben, &ben2, &ren, &len);
+    ret = bencode_dict_get_next(&ben, &ben2, &ren, &len);
+    CuAssertTrue(tc, 1 == ret);
     CuAssertTrue(tc, !strncmp("foo", ren, len));
     bencode_string_value(&ben2, &ren, &len);
     CuAssertPtrNotNull(tc, ren);
     CuAssertTrue(tc, !strncmp("bar", ren, len));
     free(str);
 }
+
+#if 0
+void TxestBencodeDictGetNextOnlyIfValidDictEnd(
+    CuTest * tc
+)
+{
+    bencode_t ben;
+
+    bencode_t ben2;
+
+    /*  no terminating 'e' */
+    char *str = strdup("d3:foo3:barz");
+
+    const char *ren;
+
+    int len, ret;
+
+    bencode_init(&ben, str, strlen(str));
+
+    ret = bencode_dict_get_next(&ben, &ben2, &ren, &len);
+    CuAssertTrue(tc, 0 == ret);
+    free(str);
+}
+#endif
 
 void TestBencodeDictGetNextTwice(
     CuTest * tc
@@ -430,6 +536,29 @@ void TestBencodeDictGetNextTwice(
     CuAssertTrue(tc, !strncmp("ham", ren, len));
 //    printf("%s\n", str);
 //    CuAssertTrue(tc, !strcmp("l4:test3:fooe", str));
+    free(str);
+}
+
+void TestBencodeDictGetNextTwiceOnlyIfSecondKeyValid(
+    CuTest * tc
+)
+{
+    bencode_t ben;
+
+    bencode_t ben2;
+
+    char *str = strdup("d4:test3:egg2:foo3:hame");
+
+    const char *ren;
+
+    int len, ret;
+
+    bencode_init(&ben, str, strlen(str));
+
+    bencode_dict_get_next(&ben, &ben2, &ren, &len);
+
+    ret = bencode_dict_get_next(&ben, &ben2, &ren, &len);
+    CuAssertTrue(tc, ret == 0);
     free(str);
 }
 

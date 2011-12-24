@@ -83,6 +83,9 @@ bool bencode_is_dict(
     return ptr[0] == 'd';
 }
 
+/*
+ * move to next item
+ * @return pointer to string on success, otherwise NULL */
 static const char *__iterate_to_next_string_pos(
     bencode_t * be,
     const char *ptr
@@ -98,7 +101,7 @@ static const char *__iterate_to_next_string_pos(
         {
             if (-1 == bencode_dict_get_next(&iter, NULL, NULL, NULL))
             {
-                printf("error, DICT invalud: %s\n", iter.str);
+                printf("error, DICT invalid: %s\n", iter.str);
                 return 0;
             }
         }
@@ -110,7 +113,7 @@ static const char *__iterate_to_next_string_pos(
         {
             if (-1 == bencode_list_get_next(&iter, NULL))
             {
-                printf("error, LIST invalud: %s\n", iter.str);
+                printf("error, LIST invalid: %s\n", iter.str);
                 return 0;
             }
         }
@@ -142,7 +145,7 @@ static const char *__iterate_to_next_string_pos(
         return end + 1;
     }
 
-    assert(0);
+    /*  bad bencode string */
     return NULL;
 }
 
@@ -177,12 +180,12 @@ static const char *__read_string_len(
 void bencode_init(
     bencode_t * be,
     const char *str,
-    int len
+    const int len
 )
 {
     memset(be, 0, sizeof(bencode_t));
 
-    be->start = str;
+    be->str = be->start = str;
     be->str = str;
     be->len = len;
     assert(0 < be->len);
@@ -259,13 +262,12 @@ bool bencode_dict_has_next(
 {
     const char *ptr;
 
-//    assert(bencode_is_dict(be));
+    assert(be);
 
     ptr = be->str;
 
-    assert(ptr);
-
-    if (*ptr == 'e')
+    if (!ptr || *ptr == 'e' || *ptr == '\0' || *ptr == '\r'
+        || be->str == be->start + be->len || be->str == be->start + be->len - 1)
     {
         return 0;
     }
@@ -275,9 +277,11 @@ bool bencode_dict_has_next(
 
 /**
  * get the next item.
+ *
  * @param be_item : next item.
  * @param key : key of next item
- * @param klen : length of the key of next item. */
+ * @param klen : length of the key of next item.
+ * @return 0 on failure; 1 otherwise*/
 int bencode_dict_get_next(
     bencode_t * be,
     bencode_t * be_item,
@@ -291,22 +295,13 @@ int bencode_dict_get_next(
 
     int len;
 
-
-//    assert(bencode_is_dict(be));
-
     ptr = be->str;
 
-//    assert(be->str[0] != 'e');
-
-    assert(be->str[0] != '\0');
     assert(be->str[0] != 'e');
 
     if (be->str[0] == 'd')
     {
         ptr++;
-    }
-    else if (be->str[0] == '\0')
-    {
     }
     else if (be->str[0] == 'e')
     {
@@ -314,27 +309,33 @@ int bencode_dict_get_next(
         return 0;
     }
 
+    /* 1. find out what the key's length is */
     keyin = __read_string_len(ptr, &len);
 
+    /* 2. if we have a value bencode, lets put the value inside */
     if (be_item)
     {
         *klen = len;
         bencode_init(be_item, keyin + len, __carry_length(be, keyin + len));
     }
 
-    /* iterate to next value */
-
-    be->str = __iterate_to_next_string_pos(be, keyin + len);
-
-    if (!be->str)
+    /* 3. iterate to next dict key, or move to next item in parent */
+    if (!(be->str = __iterate_to_next_string_pos(be, keyin + len)))
     {
-
+        /*  if there isn't anything else or we are at the end of the string */
         return 0;
     }
 
-    assert(be->str);
-//    assert(*key);
+    /*  if at the end of bencode, check that the 'e' terminator is there */
+#if 0
+    if (be->str == be->start + be->len - 1 && *be->str != 'e')
+    {
+        be->str = NULL;
+        return 0;
+    }
+#endif
 
+    assert(be->str);
     if (key)
     {
         *key = keyin;
@@ -343,6 +344,8 @@ int bencode_dict_get_next(
     return 1;
 }
 
+/* 
+ * @return 0 on failure, otherwise 1 */
 int bencode_string_value(
     bencode_t * be,
     const char **str,
@@ -352,14 +355,11 @@ int bencode_string_value(
     const char *ptr;
 
     *slen = 0;
-
     assert(bencode_is_string(be));
-
     ptr = __read_string_len(be->str, slen);
-
     assert(ptr);
     assert(0 < be->len);
-
+    /*  make sure we still fit within the buffer */
     if (ptr + *slen > be->start + (long int) be->len)
     {
         *str = NULL;
@@ -367,7 +367,6 @@ int bencode_string_value(
     }
 
     *str = ptr;
-
     return 1;
 }
 
@@ -379,9 +378,7 @@ bool bencode_list_has_next(
 
 //    assert(bencode_is_list(be));
     ptr = be->str;
-
     assert(ptr);
-
     if (*ptr == 'e')
     {
         return 0;
@@ -404,20 +401,15 @@ int bencode_list_get_next(
     const char *ptr;
 
 //    assert(bencode_is_list(be));
-
     ptr = be->str;
-
-    assert(be->str[0] != 'e');
-//    printf("%s\n", be->str);
-
     if (be->str[0] == 'l')
     {
         ptr++;
     }
-    else if (be->str[0] == '\0')
-    {
-        return -1;
-    }
+//    else if (be->str[0] == '\0')
+//    {
+//        return -1;
+//    }
     else if (be->str[0] == 'e')
     {
         return 0;
@@ -430,7 +422,10 @@ int bencode_list_get_next(
 
     /* iterate to next value */
 
-    be->str = __iterate_to_next_string_pos(be, ptr);
+    if (!(be->str = __iterate_to_next_string_pos(be, ptr)))
+    {
+        return -1;
+    }
 
     assert(be->str);
 
@@ -456,61 +451,18 @@ int bencode_dict_get_start_and_len(
 )
 {
     bencode_t ben, ben2;
-
     const char *ren;
-
     int tmplen;
 
     bencode_clone(be, &ben);
-
-//    printf("%s\n", ben.str);
 //    bencode_dict_get_next(&ben, &ben2, &ren, &tmplen);
 //    bencode_dict_get_next(&ben, &ben2, &ren, &tmplen);
-
     *start = ben.str;
-
     while (bencode_dict_has_next(&ben))
     {
         bencode_dict_get_next(&ben, &ben2, &ren, &tmplen);
     }
 
     *len = ben.str - *start + 1;
-
     return 0;
 }
-
-#if 0
-int bencode_dict_get_value_as_string(
-    bencode_t * be,
-    char **start,
-    int *len
-)
-{
-    bencode_t iter;
-
-    bencode_t tmp;
-
-    char *tmpk;
-
-    int tmpklen;
-
-    *start = be->str;
-
-    bencode_clone(be, &iter);
-
-//    printf("end::::: %s\n", iter.str);
-
-    while (bencode_dict_has_next(&iter))
-    {
-        bencode_dict_get_next(&iter, &tmp, &tmpk, &tmpklen);
-    }
-
-//    printf("end::::: %s\n", iter.str);
-
-    *len = iter.str - *start;
-
-    printf("%s, %d\n", *start, *len);
-
-    return 1;
-}
-#endif
