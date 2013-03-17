@@ -30,7 +30,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <stdbool.h>
 #include <assert.h>
-#include <setjmp.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -199,7 +198,7 @@ bool bencode_is_int(
 }
 
 void bencode_done(
-    bencode_t * be
+    bencode_t * be __attribute__((__unused__))
 )
 {
 

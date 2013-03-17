@@ -1,11 +1,12 @@
+#pragma once
 
 typedef struct
 {
     const char *str;
-    int val;
-    int len;
     const char *start;
     void *parent;
+    int val;
+    int len;
 } bencode_t;
 
 void bencode_init(
@@ -60,3 +61,23 @@ int bencode_list_get_next(
 bool bencode_is_list(
     bencode_t * be
 );
+
+bool bencode_is_dict(
+    bencode_t * be
+);
+
+void bencode_clone(
+    bencode_t * be,
+    bencode_t * output
+);
+
+/**
+ * get the start and end position of this dictionary
+ * @param start : starting string
+ * @parama len : len of the dictionary */
+int bencode_dict_get_start_and_len(
+    bencode_t * be,
+    const char **start,
+    int *len
+);
+

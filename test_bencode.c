@@ -29,7 +29,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdbool.h>
 #include <assert.h>
-#include <setjmp.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -47,11 +46,8 @@ void TestBencodeWontDoShortExpectedLength(
 
     const char *ren;
 
-    char *ptr;
-
     int len;
 
-    ptr = str;
     bencode_init(&ben, str, 3);
     CuAssertTrue(tc, 0 == bencode_string_value(&ben, &ren, &len));
     bencode_done(&ben);
@@ -68,11 +64,8 @@ void TestBencodeWontDoShortExpectedLength2(
 
     const char *ren;
 
-    char *ptr;
-
     int len;
 
-    ptr = str;
     bencode_init(&ben, str, 1);
     CuAssertTrue(tc, 0 == bencode_string_value(&ben, &ren, &len));
     bencode_done(&ben);
@@ -182,11 +175,8 @@ void TestBencodeStringValue(
 
     const char *ren;
 
-    char *ptr;
-
     int len;
 
-    ptr = str;
     //*ptr = 0;
     bencode_init(&ben, str, strlen(str));
     bencode_string_value(&ben, &ren, &len);
@@ -259,8 +249,6 @@ void TestBencodeStringHandlesNonAscii0(
 
     const char *ren;
 
-    char *ptr;
-
     int len;
 
     /*  127.0.0.1:80 */
@@ -271,7 +259,6 @@ void TestBencodeStringHandlesNonAscii0(
     str[6] = 0;
     str[7] = 80;
 
-    ptr = str;
     bencode_init(&ben, str, 8);
 
     bencode_string_value(&ben, &ren, &len);
@@ -358,10 +345,6 @@ void TestBencodeListGetNextTwiceWhereOnlyOneAvailable(
 
     char *str = strdup("l4:teste");
 
-    const char *ren;
-
-    int len;
-
     bencode_init(&ben, str, strlen(str));
     CuAssertTrue(tc, 1 == bencode_list_get_next(&ben, &ben2));
     CuAssertTrue(tc, 0 == bencode_list_get_next(&ben, &ben2));
@@ -406,10 +389,6 @@ void TestBencodeListGetNextAtInvalidEnd(
     bencode_t ben2;
 
     char *str = strdup("l4:testg");
-
-    const char *ren;
-
-    int len;
 
     bencode_init(&ben, str, strlen(str));
 
@@ -605,8 +584,6 @@ void TestBencodeDictInnerList(
 
     bencode_t ben2;
 
-    bencode_t ben3;
-
     char *str = strdup("d3:keyl4:test3:fooe3:foo3:bare");
 
     const char *ren;
@@ -637,10 +614,6 @@ void TestBencodeCloneClones(
 
     char *str = strdup("d3:keyl4:test3:fooe3:foo3:bare");
 
-    const char *ren;
-
-    int len;
-
     bencode_init(&ben, str, strlen(str));
 
     bencode_clone(&ben, &ben2);
@@ -652,7 +625,7 @@ void TestBencodeCloneClones(
 }
 
 void TestBencodeDictValueAsString(
-    CuTest * tc
+    CuTest * tc __attribute__((__unused__))
 )
 {
 #if 0
@@ -677,7 +650,7 @@ void TestBencodeDictValueAsString(
 }
 
 void TestBencodeDictValueAsString2(
-    CuTest * tc
+    CuTest * tc __attribute__((__unused__))
 )
 {
 #if 0
@@ -740,7 +713,7 @@ void TestBencodeDictGetStartAndLen(
 //    printf("FFF: %d '%s'\n", len, ren);
 //    printf("%d\n", strlen(expected));
 
-    CuAssertTrue(tc, len == strlen(expected));
+    CuAssertTrue(tc, len == (int)strlen(expected));
     CuAssertTrue(tc, !strncmp(ren, expected, len));
     free(str);
 }
@@ -760,7 +733,7 @@ void TestBencodeStringValueIsZeroLength(
 
     const char *val;
 
-    int len, klen, vlen;
+    int klen, vlen;
 
     bencode_init(&ben, str, strlen(str));
 

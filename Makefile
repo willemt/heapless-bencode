@@ -1,6 +1,5 @@
 CC     = gcc
-CCFLAGS = -g
-
+CCFLAGS = -g -O2 -Wall -Werror -W -fno-omit-frame-pointer -fno-common -fsigned-char
 
 all: tests
 
