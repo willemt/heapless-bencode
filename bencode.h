@@ -71,10 +71,6 @@ void bencode_clone(
     bencode_t * output
 );
 
-/**
- * get the start and end position of this dictionary
- * @param start : starting string
- * @parama len : len of the dictionary */
 int bencode_dict_get_start_and_len(
     bencode_t * be,
     const char **start,
