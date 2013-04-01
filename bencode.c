@@ -82,7 +82,49 @@ bool bencode_is_dict(
     return ptr[0] == 'd';
 }
 
-/*
+bool bencode_is_int(
+    bencode_t * be
+)
+{
+    return (be->str[0] == 'i');
+}
+
+bool bencode_is_list(
+    bencode_t * be
+)
+{
+    const char *ptr;
+
+    ptr = be->str;
+
+    assert(ptr);
+
+    return ptr[0] == 'l';
+}
+
+bool bencode_is_string(
+    bencode_t * be
+)
+{
+    const char *ptr;
+
+    ptr = be->str;
+
+    assert(ptr);
+
+    if (!isdigit(*ptr))
+        return 0;
+
+    do
+    {
+        ptr++;
+    }
+    while (isdigit(*ptr));
+
+    return *ptr == ':';
+}
+
+/**
  * move to next item
  * @return pointer to string on success, otherwise NULL */
 static const char *__iterate_to_next_string_pos(
@@ -190,53 +232,11 @@ void bencode_init(
     assert(0 < be->len);
 }
 
-bool bencode_is_int(
-    bencode_t * be
-)
-{
-    return (be->str[0] == 'i');
-}
-
 void bencode_done(
     bencode_t * be __attribute__((__unused__))
 )
 {
 
-}
-
-bool bencode_is_list(
-    bencode_t * be
-)
-{
-    const char *ptr;
-
-    ptr = be->str;
-
-    assert(ptr);
-
-    return ptr[0] == 'l';
-}
-
-bool bencode_is_string(
-    bencode_t * be
-)
-{
-    const char *ptr;
-
-    ptr = be->str;
-
-    assert(ptr);
-
-    if (!isdigit(*ptr))
-        return 0;
-
-    do
-    {
-        ptr++;
-    }
-    while (isdigit(*ptr));
-
-    return *ptr == ':';
 }
 
 /**
@@ -255,6 +255,8 @@ int bencode_int_value(
     return 1;
 }
 
+/**
+ * @return 1 if there is another item for this dict */
 bool bencode_dict_has_next(
     bencode_t * be
 )
@@ -266,7 +268,8 @@ bool bencode_dict_has_next(
     ptr = be->str;
 
     if (!ptr || *ptr == 'e' || *ptr == '\0' || *ptr == '\r'
-        || be->str == be->start + be->len || be->str == be->start + be->len - 1)
+        /* at the end of the input string */
+        || be->str >= be->start + be->len - 1)
     {
         return 0;
     }
@@ -354,10 +357,14 @@ int bencode_string_value(
     const char *ptr;
 
     *slen = 0;
+    
     assert(bencode_is_string(be));
+    
     ptr = __read_string_len(be->str, slen);
+    
     assert(ptr);
     assert(0 < be->len);
+    
     /*  make sure we still fit within the buffer */
     if (ptr + *slen > be->start + (long int) be->len)
     {
@@ -369,6 +376,8 @@ int bencode_string_value(
     return 1;
 }
 
+/**
+ * @return 1 if there is another item on the list */
 bool bencode_list_has_next(
     bencode_t * be
 )
@@ -377,7 +386,9 @@ bool bencode_list_has_next(
 
 //    assert(bencode_is_list(be));
     ptr = be->str;
+    
     assert(ptr);
+    
     if (*ptr == 'e')
     {
         return 0;
@@ -386,11 +397,8 @@ bool bencode_list_has_next(
     return 1;
 }
 
-/*
- *
- * @return 0 on end
- * @return 1 on have next
- * @return -1 on error
+/**
+ * @return 0 on end; 1 on have next; -1 on error
  */
 int bencode_list_get_next(
     bencode_t * be,
@@ -420,7 +428,6 @@ int bencode_list_get_next(
     }
 
     /* iterate to next value */
-
     if (!(be->str = __iterate_to_next_string_pos(be, ptr)))
     {
         return -1;
@@ -442,7 +449,8 @@ void bencode_clone(
 /**
  * get the start and end position of this dictionary
  * @param start : starting string
- * @parama len : len of the dictionary */
+ * @param len : len of the dictionary 
+ * @return 0 on sucess */
 int bencode_dict_get_start_and_len(
     bencode_t * be,
     const char **start,
