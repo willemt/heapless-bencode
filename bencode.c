@@ -47,24 +47,24 @@ static int __carry_length(
 }
 
 static long int __read_string_int(
-    const char *ptr,
+    const char *sp,
     const char **end
 )
 {
     long int val = 0;
 
-    assert(isdigit(*ptr));
+    assert(isdigit(*sp));
 
     /* work out number */
     do
     {
         val *= 10;
-        val += *ptr - '0';
-        ptr++;
+        val += *sp - '0';
+        sp++;
     }
-    while (isdigit(*ptr));
+    while (isdigit(*sp));
 
-    *end = ptr;
+    *end = sp;
 
     return val;
 }
@@ -73,77 +73,66 @@ bool bencode_is_dict(
     bencode_t * be
 )
 {
-    const char *ptr;
-
-    ptr = be->str;
-
-    assert(ptr);
-
-    return ptr[0] == 'd';
+    return be->str && *be->str == 'd';
 }
 
 bool bencode_is_int(
     bencode_t * be
 )
 {
-    return (be->str[0] == 'i');
+    return be->str && *be->str == 'i';
 }
 
 bool bencode_is_list(
     bencode_t * be
 )
 {
-    const char *ptr;
-
-    ptr = be->str;
-
-    assert(ptr);
-
-    return ptr[0] == 'l';
+    return be->str && *be->str == 'l';
 }
 
 bool bencode_is_string(
     bencode_t * be
 )
 {
-    const char *ptr;
+    const char *sp;
 
-    ptr = be->str;
+    sp = be->str;
 
-    assert(ptr);
+    assert(sp);
 
-    if (!isdigit(*ptr))
+    if (!isdigit(*sp))
         return 0;
 
     do
     {
-        ptr++;
+        sp++;
     }
-    while (isdigit(*ptr));
+    while (isdigit(*sp));
 
-    return *ptr == ':';
+    return *sp == ':';
 }
 
 /**
  * move to next item
+ * @param sp : the bencode string we are processing
  * @return pointer to string on success, otherwise NULL */
 static const char *__iterate_to_next_string_pos(
     bencode_t * be,
-    const char *ptr
+    const char *sp
 )
 {
     bencode_t iter;
 
-    bencode_init(&iter, ptr, __carry_length(be, ptr));
+    bencode_init(&iter, sp, __carry_length(be, sp));
 
     if (bencode_is_dict(&iter))
     {
         while (bencode_dict_has_next(&iter))
         {
-            if (-1 == bencode_dict_get_next(&iter, NULL, NULL, NULL))
+            if (0 == bencode_dict_get_next(&iter, NULL, NULL, NULL))
             {
-                printf("error, DICT invalid: %s\n", iter.str);
-                return 0;
+                /* input string is invalid */
+                return NULL;
             }
         }
         return iter.str + 1;
@@ -152,10 +141,10 @@ static const char *__iterate_to_next_string_pos(
     {
         while (bencode_list_has_next(&iter))
         {
-            if (-1 == bencode_list_get_next(&iter, NULL))
+            if (0 == bencode_list_get_next(&iter, NULL))
             {
-                printf("error, LIST invalid: %s\n", iter.str);
-                return 0;
+                /* input string is invalid */
+                return NULL;
             }
         }
 
@@ -164,12 +153,11 @@ static const char *__iterate_to_next_string_pos(
     else if (bencode_is_string(&iter))
     {
         int len;
-
         const char *str;
 
         if (0 == bencode_string_value(&iter, &str, &len))
         {
-            printf("error STRING invalid; '%s'\n", iter.str);
+            /* input string is invalid */
             return NULL;
         }
 
@@ -186,36 +174,36 @@ static const char *__iterate_to_next_string_pos(
         return end + 1;
     }
 
-    /*  bad bencode string */
+    /* input string is invalid */
     return NULL;
 }
 
 static const char *__read_string_len(
-    const char *ptr,
+    const char *sp,
     int *slen
 )
 {
     *slen = 0;
 
-    if (!isdigit(*ptr))
+    if (!isdigit(*sp))
         return NULL;
 
     /* work out number */
     do
     {
         *slen *= 10;
-        *slen += *ptr - '0';
-        ptr++;
+        *slen += *sp - '0';
+        sp++;
     }
-    while (isdigit(*ptr));
+    while (isdigit(*sp));
 
-    assert(*ptr == ':');
+    assert(*sp == ':');
 
-    ptr++;
+    sp++;
 
     assert(0 <= *slen);
 
-    return ptr;
+    return sp;
 }
 
 void bencode_init(
@@ -232,14 +220,8 @@ void bencode_init(
     assert(0 < be->len);
 }
 
-void bencode_done(
-    bencode_t * be __attribute__((__unused__))
-)
-{
-
-}
-
 /**
+ * @param val : the long int we are writing the result to
  * @return 1 on success, 0 otherwise */
 int bencode_int_value(
     bencode_t * be,
@@ -256,18 +238,18 @@ int bencode_int_value(
 }
 
 /**
- * @return 1 if there is another item for this dict */
+ * @return 1 if there is another item on this dict */
 bool bencode_dict_has_next(
     bencode_t * be
 )
 {
-    const char *ptr;
+    const char *sp;
 
     assert(be);
 
-    ptr = be->str;
+    sp = be->str;
 
-    if (!ptr || *ptr == 'e' || *ptr == '\0' || *ptr == '\r'
+    if (!sp || *sp == 'e' || *sp == '\0' || *sp == '\r'
         /* at the end of the input string */
         || be->str >= be->start + be->len - 1)
     {
@@ -278,7 +260,7 @@ bool bencode_dict_has_next(
 }
 
 /**
- * get the next item.
+ * Get the next item within this dictionary.
  *
  * @param be_item : next item.
  * @param key : key of next item
@@ -291,28 +273,28 @@ int bencode_dict_get_next(
     int *klen
 )
 {
-    const char *ptr;
-
+    const char *sp;
     const char *keyin;
-
     int len;
 
-    ptr = be->str;
+    sp = be->str;
 
-    assert(be->str[0] != 'e');
+    assert(*sp != 'e');
 
-    if (be->str[0] == 'd')
+    /* if at start increment to 1st key */
+    if (*sp == 'd')
     {
-        ptr++;
+        sp++;
     }
-    else if (be->str[0] == 'e')
+
+    /* can't get the next item if we are at the end of the dict */
+    if (*sp == 'e')
     {
-        assert(0);
         return 0;
     }
 
     /* 1. find out what the key's length is */
-    keyin = __read_string_len(ptr, &len);
+    keyin = __read_string_len(sp, &len);
 
     /* 2. if we have a value bencode, lets put the value inside */
     if (be_item)
@@ -328,8 +310,8 @@ int bencode_dict_get_next(
         return 0;
     }
 
-    /*  if at the end of bencode, check that the 'e' terminator is there */
 #if 0
+    /*  if at the end of bencode, check that the 'e' terminator is there */
     if (be->str == be->start + be->len - 1 && *be->str != 'e')
     {
         be->str = NULL;
@@ -338,6 +320,7 @@ int bencode_dict_get_next(
 #endif
 
     assert(be->str);
+
     if (key)
     {
         *key = keyin;
@@ -354,25 +337,25 @@ int bencode_string_value(
     int *slen
 )
 {
-    const char *ptr;
+    const char *sp;
 
     *slen = 0;
     
     assert(bencode_is_string(be));
     
-    ptr = __read_string_len(be->str, slen);
+    sp = __read_string_len(be->str, slen);
     
-    assert(ptr);
+    assert(sp);
     assert(0 < be->len);
     
     /*  make sure we still fit within the buffer */
-    if (ptr + *slen > be->start + (long int) be->len)
+    if (sp + *slen > be->start + (long int) be->len)
     {
         *str = NULL;
         return 0;
     }
 
-    *str = ptr;
+    *str = sp;
     return 1;
 }
 
@@ -382,14 +365,13 @@ bool bencode_list_has_next(
     bencode_t * be
 )
 {
-    const char *ptr;
+    const char *sp;
 
-//    assert(bencode_is_list(be));
-    ptr = be->str;
+    sp = be->str;
     
-    assert(ptr);
+    assert(sp);
     
-    if (*ptr == 'e')
+    if (*sp == 'e')
     {
         return 0;
     }
@@ -405,30 +387,29 @@ int bencode_list_get_next(
     bencode_t * be_item
 )
 {
-    const char *ptr;
+    const char *sp;
 
-//    assert(bencode_is_list(be));
-    ptr = be->str;
-    if (be->str[0] == 'l')
+    sp = be->str;
+
+    if (*sp == 'l')
     {
-        ptr++;
+        sp++;
     }
-//    else if (be->str[0] == '\0')
-//    {
-//        return -1;
-//    }
-    else if (be->str[0] == 'e')
+
+    /* can't get the next item if we are at the end of the dict */
+    if (*sp == 'e')
     {
         return 0;
     }
 
+    /* populate the be_item if it is available */
     if (be_item)
     {
-        bencode_init(be_item, ptr, __carry_length(be, ptr));
+        bencode_init(be_item, sp, __carry_length(be, sp));
     }
 
     /* iterate to next value */
-    if (!(be->str = __iterate_to_next_string_pos(be, ptr)))
+    if (!(be->str = __iterate_to_next_string_pos(be, sp)))
     {
         return -1;
     }
@@ -462,8 +443,6 @@ int bencode_dict_get_start_and_len(
     int tmplen;
 
     bencode_clone(be, &ben);
-//    bencode_dict_get_next(&ben, &ben2, &ren, &tmplen);
-//    bencode_dict_get_next(&ben, &ben2, &ren, &tmplen);
     *start = ben.str;
     while (bencode_dict_has_next(&ben))
     {
