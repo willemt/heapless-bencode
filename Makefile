@@ -1,7 +1,7 @@
-CC     = gcc
 GCOV_CCFLAGS = -fprofile-arcs -ftest-coverage
+GCOV_OUTPUT = *.gcda *.gcno *.gcov 
+CC     = gcc
 CCFLAGS = -g -O2 -Wall -Werror -W -fno-omit-frame-pointer -fno-common -fsigned-char $(GCOV_CCFLAGS)
-GCOV_OUTPUT = main.gcda main.gcno test_bencode.gcno test_bencode.gcda bencode.gcda bencode.gcno
 
 all: tests
 
@@ -17,5 +17,4 @@ bencode.o: bencode.c
 	$(CC) $(CCFLAGS) -c -o $@ $^
 
 clean:
-	rm -f main.c bencode.o tests *.gcda *.gcno *.gcov
-	#$(GCOV_OUTPUT)
+	rm -f main.c bencode.o tests $(GCOV_OUTPUT)

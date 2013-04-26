@@ -716,7 +716,6 @@ void TestBencodeStringValueIsZeroLength(
     CuTest * tc
 )
 {
-
     bencode_t ben, benk;
 
     char *str = strdup("d8:intervali1800e5:peers0:e");

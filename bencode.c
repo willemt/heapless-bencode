@@ -329,7 +329,7 @@ int bencode_dict_get_next(
     return 1;
 }
 
-/* 
+/** 
  * @return 0 on failure, otherwise 1 */
 int bencode_string_value(
     bencode_t * be,
