@@ -10,9 +10,12 @@ Written in C with a BSD license.
 How does it work?
 ----
 To see the module in action check out:
-1) Unit tests within test_bencode.c
-2) github.com:willemt/CTorrentFileReader
-3) github.com:willemt/CBTTrackerClient
+
+* Unit tests within test_bencode.c
+
+* github.com:willemt/CTorrentFileReader
+
+* github.com:willemt/CBTTrackerClient
 
 Building
 --------
