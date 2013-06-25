@@ -37,6 +37,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "bencode.h"
 
+/**
+ * Carry length over to a new bencode object.
+ * This is done so that we don't exhaust the buffer */
 static int __carry_length(
     bencode_t * be,
     const char *pos
@@ -127,23 +130,26 @@ static const char *__iterate_to_next_string_pos(
 
     if (bencode_is_dict(&iter))
     {
+        /* navigate to the end of the dictionary */
         while (bencode_dict_has_next(&iter))
         {
             if (0 == bencode_dict_get_next(&iter, NULL, NULL, NULL))
             {
-                /* input string is invalid */
+                /* ERROR: input string is invalid */
                 return NULL;
             }
         }
+
         return iter.str + 1;
     }
     else if (bencode_is_list(&iter))
     {
+        /* navigate to the end of the list */
         while (bencode_list_has_next(&iter))
         {
-            if (0 == bencode_list_get_next(&iter, NULL))
+            if (-1 == bencode_list_get_next(&iter, NULL))
             {
-                /* input string is invalid */
+                /* ERROR: input string is invalid */
                 return NULL;
             }
         }
@@ -213,7 +219,6 @@ void bencode_init(
 )
 {
     memset(be, 0, sizeof(bencode_t));
-
     be->str = be->start = str;
     be->str = str;
     be->len = len;
@@ -391,14 +396,27 @@ int bencode_list_get_next(
 
     sp = be->str;
 
+    /* we're at the end */
+    if (!sp || *sp == 'e')
+        return 0;
+
+#if 0 /* debugging */
+    printf("%.*s\n", be->len - (be->str - be->start), be->str);
+#endif
+
     if (*sp == 'l')
     {
-        sp++;
+        /* just move off the start of this list */
+        if (be->start == be->str)
+        {
+            sp++;
+        }
     }
 
-    /* can't get the next item if we are at the end of the dict */
+    /* can't get the next item if we are at the end of the list */
     if (*sp == 'e')
     {
+        be->str = sp;
         return 0;
     }
 
@@ -413,8 +431,6 @@ int bencode_list_get_next(
     {
         return -1;
     }
-
-    assert(be->str);
 
     return 1;
 }

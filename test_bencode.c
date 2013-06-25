@@ -175,7 +175,6 @@ void TestBencodeStringValue(
 
     int len;
 
-    //*ptr = 0;
     bencode_init(&ben, str, strlen(str));
     bencode_string_value(&ben, &ren, &len);
     CuAssertTrue(tc, !strncmp("test", ren, len));
@@ -201,7 +200,7 @@ void TestBencodeStringValue2(
 }
 
 /**
- * The string value function errors when the string is of insuficient length
+ * The string value function errors when the string is of insufficient length
  * */
 void TestBencodeStringInvalid(
     CuTest * tc
@@ -327,6 +326,28 @@ void TestBencodeListGetNext(
     free(str);
 }
 
+void TestBencodeListInListWithValue(
+    CuTest * tc
+)
+{
+    bencode_t ben, ben2, ben3;
+    const char *ren;
+    char *str = strdup("ll3:fooee");
+    int len;
+
+    bencode_init(&ben, str, strlen(str));
+
+    CuAssertTrue(tc, 1 == bencode_is_list(&ben));
+    CuAssertTrue(tc, 1 == bencode_list_get_next(&ben, &ben2));
+    CuAssertTrue(tc, 1 == bencode_is_list(&ben2));
+    CuAssertTrue(tc, 1 == bencode_list_get_next(&ben2, &ben3));
+    CuAssertTrue(tc, 1 == bencode_is_string(&ben3));
+    bencode_string_value(&ben3, &ren, &len);
+    CuAssertTrue(tc, !strncmp("foo", ren, len));
+    CuAssertTrue(tc, 0 == bencode_list_get_next(&ben, &ben2));
+    free(str);
+}
+
 void TestBencodeListWontGetNextIfEmpty(
     CuTest * tc
 )
@@ -337,6 +358,43 @@ void TestBencodeListWontGetNextIfEmpty(
 
     bencode_init(&ben, str, strlen(str));
 
+    CuAssertTrue(tc, 0 == bencode_list_get_next(&ben, &ben2));
+    free(str);
+}
+
+void TestBencodeEmptyListInListWontGetNextIfEmpty(
+    CuTest * tc
+)
+{
+    bencode_t ben, ben2;
+
+    char *str = strdup("llee");
+
+    bencode_init(&ben, str, strlen(str));
+
+
+    CuAssertTrue(tc, 1 == bencode_list_has_next(&ben));
+    CuAssertTrue(tc, 1 == bencode_list_get_next(&ben, &ben2));
+    CuAssertTrue(tc, 1 == bencode_is_list(&ben2));
+    CuAssertTrue(tc, 0 == bencode_list_get_next(&ben, &ben2));
+    free(str);
+}
+
+void TestBencodeEmptyListInListWontGetNextTwiceIfEmpty(
+    CuTest * tc
+)
+{
+    bencode_t ben, ben2;
+
+    char *str = strdup("llelee");
+
+    bencode_init(&ben, str, strlen(str));
+
+    CuAssertTrue(tc, 1 == bencode_list_has_next(&ben));
+    CuAssertTrue(tc, 1 == bencode_list_get_next(&ben, &ben2));
+    CuAssertTrue(tc, 1 == bencode_is_list(&ben2));
+    CuAssertTrue(tc, 1 == bencode_list_get_next(&ben, &ben2));
+    CuAssertTrue(tc, 1 == bencode_is_list(&ben2));
     CuAssertTrue(tc, 0 == bencode_list_get_next(&ben, &ben2));
     free(str);
 }
@@ -377,8 +435,10 @@ void TestBencodeListGetNextTwice(
     bencode_string_value(&ben2, &ren, &len);
     CuAssertTrue(tc, !strncmp("foo", ren, len));
 
-//    printf("%s\n", str);
-//    CuAssertTrue(tc, !strcmp("l4:test3:fooe", str));
+#if 0 /* debugging */
+    printf("%s\n", str);
+    CuAssertTrue(tc, !strcmp("l4:test3:fooe", str));
+#endif
     free(str);
 }
 
@@ -599,7 +659,6 @@ void TestBencodeDictInnerList(
     CuAssertTrue(tc, !strncmp(ren, "foo", len));
 
     CuAssertTrue(tc, !bencode_dict_has_next(&ben));
-//    printf("%s\n", str);
 //    CuAssertTrue(tc, !strcmp("l4:test3:fooe", str));
     free(str);
 }
@@ -701,10 +760,6 @@ void TestBencodeDictGetStartAndLen(
 
     bencode_dict_get_next(&ben, &ben2, &ren, &len);
     bencode_dict_get_start_and_len(&ben2, &ren, &len);
-
-//    printf("FFF: %d '%s'\n", len, ren);
-//    printf("%d\n", strlen(expected));
-
     CuAssertTrue(tc, len == (int)strlen(expected));
     CuAssertTrue(tc, !strncmp(ren, expected, len));
     free(str);
