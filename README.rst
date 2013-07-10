@@ -1,5 +1,7 @@
 CHeaplessBencodeReader
 ==========
+.. image:: https://travis-ci.org/willemt/CHeaplessBencodeReader.png
+   :target: https://travis-ci.org/willemt/CHeaplessBencodeReader
 
 What?
 -----
