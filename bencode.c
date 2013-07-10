@@ -72,6 +72,10 @@ static long int __read_string_int(
     return val;
 }
 
+/****f* Bencode/is_dict
+* RETURNS
+*   Returns 1 if the bencode object is a dict.
+******/
 bool bencode_is_dict(
     bencode_t * be
 )
@@ -79,6 +83,10 @@ bool bencode_is_dict(
     return be->str && *be->str == 'd';
 }
 
+/****f* Bencode/Bencode
+* FUNCTION
+*   Returns 1 if the bencode object is an int.
+******/
 bool bencode_is_int(
     bencode_t * be
 )
@@ -86,6 +94,10 @@ bool bencode_is_int(
     return be->str && *be->str == 'i';
 }
 
+/****f* Bencode/Bencode
+* FUNCTION
+*   Returns 1 if the bencode object is a list.
+*/
 bool bencode_is_list(
     bencode_t * be
 )
@@ -93,6 +105,10 @@ bool bencode_is_list(
     return be->str && *be->str == 'l';
 }
 
+/****f* Bencode/Bencode
+* FUNCTION
+*   Returns 1 if the bencode object is a string.
+*/
 bool bencode_is_string(
     bencode_t * be
 )
@@ -115,8 +131,9 @@ bool bencode_is_string(
     return *sp == ':';
 }
 
+
 /**
- * move to next item
+ * Move to next item
  * @param sp : the bencode string we are processing
  * @return pointer to string on success, otherwise NULL */
 static const char *__iterate_to_next_string_pos(
@@ -212,6 +229,10 @@ static const char *__read_string_len(
     return sp;
 }
 
+/****f* Bencode/Bencode
+* FUNCTION
+*  Initialise a bencode object.
+*/
 void bencode_init(
     bencode_t * be,
     const char *str,
@@ -225,11 +246,18 @@ void bencode_init(
     assert(0 < be->len);
 }
 
+/****f* Bencode/Bencode
+* FUNCTION
+*  Returns 1 on success, 0 otherwise
+*/
 /**
- * @param val : the long int we are writing the result to
- * @return 1 on success, 0 otherwise */
+ * @param val : 
+ * @return  */
 int bencode_int_value(
     bencode_t * be,
+/*
+ * OUTPUTS
+ *    val -- the long int we are writing the result to */
     long int *val
 )
 {
@@ -242,8 +270,10 @@ int bencode_int_value(
     return 1;
 }
 
-/**
- * @return 1 if there is another item on this dict */
+/****f* Bencode/Bencode
+* FUNCTION
+*  Returns 1 if there is another item on this dict, otherwise 0
+*/
 bool bencode_dict_has_next(
     bencode_t * be
 )
@@ -264,13 +294,16 @@ bool bencode_dict_has_next(
     return 1;
 }
 
-/**
- * Get the next item within this dictionary.
- *
- * @param be_item : next item.
- * @param key : key of next item
- * @param klen : length of the key of next item.
- * @return 0 on failure; 1 otherwise*/
+/****f* Bencode/Bencode
+* FUNCTION
+*  Get the next item within this dictionary.
+* RETURNS
+*  0 on failure; 1 otherwise
+* INPUTS
+*   be_item -- next item.
+*   key -- key of next item
+*   klen -- length of the key of next item.
+*/
 int bencode_dict_get_next(
     bencode_t * be,
     bencode_t * be_item,
@@ -334,8 +367,14 @@ int bencode_dict_get_next(
     return 1;
 }
 
-/** 
- * @return 0 on failure, otherwise 1 */
+/****f* Bencode/Bencode
+* FUNCTION
+*  Get the next item within this dictionary.
+* RETURNS
+*  0 on failure; 1 otherwise
+* INPUTS
+*   be -- item
+*/
 int bencode_string_value(
     bencode_t * be,
     const char **str,
@@ -364,8 +403,14 @@ int bencode_string_value(
     return 1;
 }
 
-/**
- * @return 1 if there is another item on the list */
+/****f* Bencode/Bencode
+* FUNCTION
+*  Tell if there is another item within this list.
+* RETURNS
+*  1 if another item exists on the list; 0 otherwise; -1 on invalid processing
+* INPUTS
+*   be -- item
+*/
 bool bencode_list_has_next(
     bencode_t * be
 )
@@ -384,9 +429,14 @@ bool bencode_list_has_next(
     return 1;
 }
 
-/**
- * @return 0 on end; 1 on have next; -1 on error
- */
+/****f* Bencode/Bencode
+* FUNCTION
+*  Get the next item within this list.
+* RETURNS
+*  return 0 on end; 1 on have next; -1 on error
+* INPUTS
+*   be -- item
+*/
 int bencode_list_get_next(
     bencode_t * be,
     bencode_t * be_item
@@ -443,11 +493,16 @@ void bencode_clone(
     memcpy(output, be, sizeof(bencode_t));
 }
 
-/**
- * get the start and end position of this dictionary
- * @param start : starting string
- * @param len : len of the dictionary 
- * @return 0 on sucess */
+/****f* Bencode/Bencode
+* FUNCTION
+*  Get the start and end position of this dictionary
+* RETURNS
+*  return 0 on success
+* INPUTS
+*   be -- item
+*   start -- starting string
+*   len -- len of the dictionary 
+******/
 int bencode_dict_get_start_and_len(
     bencode_t * be,
     const char **start,
