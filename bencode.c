@@ -127,7 +127,6 @@ bool bencode_is_string(
     return *sp == ':';
 }
 
-
 /**
  * Move to next item
  * @param sp The bencode string we are processing

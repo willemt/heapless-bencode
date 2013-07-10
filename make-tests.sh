@@ -23,7 +23,7 @@ cat $FILES | grep '^void Test' |
         -e 's/$/(CuTest*);/' \
         -e 's/^/extern /'
 
-echo \
+echo -n \
 '
 
 void RunAllTests(void) 
@@ -41,7 +41,6 @@ cat $FILES | grep '^void Test' |
 echo \
 '
     CuSuiteRun(suite);
-    CuSuiteSummary(suite, output);
     CuSuiteDetails(suite, output);
     printf("%s\\n", output->buffer);
 }
