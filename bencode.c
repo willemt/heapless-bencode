@@ -28,7 +28,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <stdio.h>
-#include <stdbool.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -75,7 +74,7 @@ static long int __read_string_int(
 /**
 * @return 1 if the bencode object is a dict; otherwise 0.
 */
-bool bencode_is_dict(
+int bencode_is_dict(
     bencode_t * be
 )
 {
@@ -85,7 +84,7 @@ bool bencode_is_dict(
 /**
 * @return 1 if the bencode object is an int; otherwise 0.
 */
-bool bencode_is_int(
+int bencode_is_int(
     bencode_t * be
 )
 {
@@ -95,7 +94,7 @@ bool bencode_is_int(
 /**
 * @return 1 if the bencode object is a list; otherwise 0.
 */
-bool bencode_is_list(
+int bencode_is_list(
     bencode_t * be
 )
 {
@@ -105,7 +104,7 @@ bool bencode_is_list(
 /**
 * @return 1 if the bencode object is a string; otherwise 0.
 */
-bool bencode_is_string(
+int bencode_is_string(
     bencode_t * be
 )
 {
@@ -265,7 +264,7 @@ int bencode_int_value(
 /**
 * @return 1 if there is another item on this dict; otherwise 0.
 */
-bool bencode_dict_has_next(
+int bencode_dict_has_next(
     bencode_t * be
 )
 {
@@ -393,10 +392,10 @@ int bencode_string_value(
 
 /**
 * Tell if there is another item within this list.
-* @return 1 if another item exists on the list; 0 otherwise; -1 on invalid processing
 * @param be The bencode object
+* @return 1 if another item exists on the list; 0 otherwise; -1 on invalid processing
 */
-bool bencode_list_has_next(
+int bencode_list_has_next(
     bencode_t * be
 )
 {

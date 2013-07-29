@@ -15,7 +15,7 @@ void bencode_init(
     int len
 );
 
-bool bencode_is_int(
+int bencode_is_int(
     bencode_t * be
 );
 
@@ -23,7 +23,7 @@ void bencode_done(
     bencode_t * be
 );
 
-bool bencode_is_string(
+int bencode_is_string(
     bencode_t * be
 );
 
@@ -32,7 +32,7 @@ int bencode_int_value(
     long int *val
 );
 
-bool bencode_dict_has_next(
+int bencode_dict_has_next(
     bencode_t * be
 );
 
@@ -49,7 +49,7 @@ int bencode_string_value(
     int *len
 );
 
-bool bencode_list_has_next(
+int bencode_list_has_next(
     bencode_t * be
 );
 
@@ -58,11 +58,11 @@ int bencode_list_get_next(
     bencode_t * be_item
 );
 
-bool bencode_is_list(
+int bencode_is_list(
     bencode_t * be
 );
 
-bool bencode_is_dict(
+int bencode_is_dict(
     bencode_t * be
 );
 
