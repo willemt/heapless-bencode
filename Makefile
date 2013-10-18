@@ -3,7 +3,7 @@ GCOV_OUTPUT = *.gcda *.gcno *.gcov
 CC     = gcc
 CCFLAGS = -g -O2 -Wall -Werror -W -fno-omit-frame-pointer -fno-common -fsigned-char $(GCOV_CCFLAGS)
 
-all: bencode_consumer tests 
+all: tests 
 
 main.c:
 	sh make-tests.sh > main.c

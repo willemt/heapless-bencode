@@ -408,7 +408,7 @@ int bencode_list_has_next(
         sp == be->start &&
         *(sp + 1) == 'e')
     {
-        printf("%s\n", be->start);
+        be->str++;
         return 0;
     }
 
@@ -436,13 +436,13 @@ int bencode_list_get_next(
 
     sp = be->str;
 
-    /* we're at the end */
-    if (!sp || *sp == 'e')
-        return 0;
-
 #if 0 /* debugging */
     printf("%.*s\n", be->len - (be->str - be->start), be->str);
 #endif
+
+    /* we're at the end */
+    if (!sp || *sp == 'e')
+        return 0;
 
     if (*sp == 'l')
     {
