@@ -75,7 +75,7 @@ static long int __read_string_int(
 * @return 1 if the bencode object is a dict; otherwise 0.
 */
 int bencode_is_dict(
-    bencode_t * be
+    const bencode_t * be
 )
 {
     return be->str && *be->str == 'd';
@@ -85,7 +85,7 @@ int bencode_is_dict(
 * @return 1 if the bencode object is an int; otherwise 0.
 */
 int bencode_is_int(
-    bencode_t * be
+    const bencode_t * be
 )
 {
     return be->str && *be->str == 'i';
@@ -95,7 +95,7 @@ int bencode_is_int(
 * @return 1 if the bencode object is a list; otherwise 0.
 */
 int bencode_is_list(
-    bencode_t * be
+    const bencode_t * be
 )
 {
     return be->str && *be->str == 'l';
@@ -105,7 +105,7 @@ int bencode_is_list(
 * @return 1 if the bencode object is a string; otherwise 0.
 */
 int bencode_is_string(
-    bencode_t * be
+    const bencode_t * be
 )
 {
     const char *sp;
@@ -286,10 +286,10 @@ int bencode_dict_has_next(
 
 /**
 * Get the next item within this dictionary.
-* @return 1 on success; otherwise 0.
 * @param be_item Next item.
-* @param key Key of next item.
+* @param key Const pointer to key string of next item.
 * @param klen Length of the key of next item.
+* @return 1 on success; otherwise 0.
 */
 int bencode_dict_get_next(
     bencode_t * be,
@@ -358,7 +358,7 @@ int bencode_dict_get_next(
 * Get the string value from this bencode object.
 * The buffer returned is stored on the stack.
 * @param be The bencode object.
-* @param str Buffer that we are outputting to.
+* @param str Const pointer to the buffer.
 * @param slen Length of the buffer we are outputting.
 * @return 1 on success; otherwise 0
 */
@@ -403,8 +403,16 @@ int bencode_list_has_next(
 
     sp = be->str;
     
-    assert(sp);
-    
+    /* empty list */
+    if (*sp == 'l' &&
+        sp == be->start &&
+        *(sp + 1) == 'e')
+    {
+        printf("%s\n", be->start);
+        return 0;
+    }
+
+    /* end of list */
     if (*sp == 'e')
     {
         return 0;

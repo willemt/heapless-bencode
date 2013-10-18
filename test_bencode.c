@@ -348,6 +348,18 @@ void TestBencodeListInListWithValue(
     free(str);
 }
 
+void TestBencodeListDoesntHasNextWhenEmpty(
+    CuTest * tc
+)
+{
+    bencode_t ben;
+
+    char *str = strdup("le");
+    bencode_init(&ben, str, strlen(str));
+    CuAssertTrue(tc, 0 == bencode_list_has_next(&ben));
+    free(str);
+}
+
 void TestBencodeListWontGetNextIfEmpty(
     CuTest * tc
 )
@@ -390,11 +402,17 @@ void TestBencodeEmptyListInListWontGetNextTwiceIfEmpty(
 
     bencode_init(&ben, str, strlen(str));
 
+    printf("1\n");
     CuAssertTrue(tc, 1 == bencode_list_has_next(&ben));
+    printf("2\n");
     CuAssertTrue(tc, 1 == bencode_list_get_next(&ben, &ben2));
+    printf("3\n");
     CuAssertTrue(tc, 1 == bencode_is_list(&ben2));
+    printf("4\n");
     CuAssertTrue(tc, 1 == bencode_list_get_next(&ben, &ben2));
+    printf("5\n");
     CuAssertTrue(tc, 1 == bencode_is_list(&ben2));
+    printf("6\n");
     CuAssertTrue(tc, 0 == bencode_list_get_next(&ben, &ben2));
     free(str);
 }
