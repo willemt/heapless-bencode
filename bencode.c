@@ -31,6 +31,9 @@ static int __carry_length(
     return be->len - (pos - be->str);
 }
 
+/**
+ * @param end The point that we read out to
+ * @return number represented by string */
 static long int __read_string_int(
     const char *sp,
     const char **end
@@ -50,7 +53,6 @@ static long int __read_string_int(
     while (isdigit(*sp));
 
     *end = sp;
-
     return val;
 }
 
@@ -88,10 +90,7 @@ int bencode_is_string(
     if (!isdigit(*sp))
         return 0;
 
-    do
-    {
-        sp++;
-    }
+    do sp++;
     while (isdigit(*sp));
 
     return *sp == ':';
@@ -115,11 +114,9 @@ static const char *__iterate_to_next_string_pos(
         /* navigate to the end of the dictionary */
         while (bencode_dict_has_next(&iter))
         {
+            /* ERROR: input string is invalid */
             if (0 == bencode_dict_get_next(&iter, NULL, NULL, NULL))
-            {
-                /* ERROR: input string is invalid */
                 return NULL;
-            }
         }
 
         return iter.str + 1;
@@ -129,11 +126,9 @@ static const char *__iterate_to_next_string_pos(
         /* navigate to the end of the list */
         while (bencode_list_has_next(&iter))
         {
+            /* ERROR: input string is invalid */
             if (-1 == bencode_list_get_next(&iter, NULL))
-            {
-                /* ERROR: input string is invalid */
                 return NULL;
-            }
         }
 
         return iter.str + 1;
@@ -143,11 +138,9 @@ static const char *__iterate_to_next_string_pos(
         int len;
         const char *str;
 
+        /* ERROR: input string is invalid */
         if (0 == bencode_string_value(&iter, &str, &len))
-        {
-            /* input string is invalid */
             return NULL;
-        }
 
         return str + len;
     }
@@ -186,12 +179,9 @@ static const char *__read_string_len(
     while (isdigit(*sp));
 
     assert(*sp == ':');
-
-    sp++;
-
     assert(0 <= *slen);
 
-    return sp;
+    return sp + 1;
 }
 
 void bencode_init(
@@ -225,13 +215,16 @@ int bencode_dict_has_next(
     bencode_t * be
 )
 {
-    const char *sp;
+    const char *sp = be->str;
 
     assert(be);
 
-    sp = be->str;
-
-    if (!sp || *sp == 'e' || *sp == '\0' || *sp == '\r'
+    if (!sp
+        /* at end of dict */
+        || *sp == 'e'
+        /* at end of string */
+        || *sp == '\0'
+        || *sp == '\r'
         /* at the end of the input string */
         || be->str >= be->start + be->len - 1)
     {
@@ -248,11 +241,9 @@ int bencode_dict_get_next(
     int *klen
 )
 {
-    const char *sp;
+    const char *sp = be->str;
     const char *keyin;
     int len;
-
-    sp = be->str;
 
     assert(*sp != 'e');
 
@@ -427,9 +418,7 @@ int bencode_dict_get_start_and_len(
     bencode_clone(be, &ben);
     *start = ben.str;
     while (bencode_dict_has_next(&ben))
-    {
         bencode_dict_get_next(&ben, &ben2, &ren, &tmplen);
-    }
 
     *len = ben.str - *start + 1;
     return 0;
