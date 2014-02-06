@@ -3,9 +3,10 @@ CHeaplessBencodeReader
 .. image:: https://travis-ci.org/willemt/CHeaplessBencodeReader.png
    :target: https://travis-ci.org/willemt/CHeaplessBencodeReader
 
-.. image:: https://coveralls.io/repos/willemt/CHeaplessBencodeReader/badge.png?branch=master :target: https://coveralls.io/r/willemt/CHeaplessBencodeReader?branch=master
+.. image:: https://coveralls.io/repos/willemt/CHeaplessBencodeReader/badge.png?branch=master
+  :target: https://coveralls.io/r/willemt/CHeaplessBencodeReader?branch=master
 
-What?
+Whatk
 -----
 A bencode reader that doesn't use the heap (ie. malloc/free).
 
