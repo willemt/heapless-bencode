@@ -3,14 +3,14 @@ GCOV_OUTPUT = *.gcda *.gcno *.gcov
 CC     = gcc
 CCFLAGS = -g -O2 -Wall -Werror -W -I. -fno-omit-frame-pointer -fno-common -fsigned-char $(GCOV_CCFLAGS)
 
-all: tests 
+all: test_bencode
 
 main.c:
 	sh tests/make-tests.sh tests/test_bencode.c > main.c
 
-tests: main.c bencode.o tests/test_bencode.c tests/CuTest.c
+test_bencode: main.c bencode.o tests/test_bencode.c tests/CuTest.c
 	$(CC) $(CCFLAGS) -Itests -o $@ $^
-	./tests
+	./test_bencode
 	gcov main.c test_bencode.c bencode.c
 
 bencode_consumer: bencode_consumer.c bencode.o
