@@ -1,31 +1,14 @@
-/*
- 
-Copyright (c) 2011, Willem-Hendrik Thiart
-All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-    * The names of its contributors may not be used to endorse or promote
-      products derived from this software without specific prior written
-      permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL WILLEM-HENDRIK THIART BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
+/**
+ * Copyright (c) 2014, Willem-Hendrik Thiart
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. 
+ *
+ * @file
+ * @brief Read bencoded data
+ * @author  Willem Thiart himself@willemthiart.com
+ * @version 0.1
+ */
 
 #include <stdio.h>
 #include <assert.h>
@@ -71,9 +54,6 @@ static long int __read_string_int(
     return val;
 }
 
-/**
-* @return 1 if the bencode object is a dict; otherwise 0.
-*/
 int bencode_is_dict(
     const bencode_t * be
 )
@@ -81,9 +61,6 @@ int bencode_is_dict(
     return be->str && *be->str == 'd';
 }
 
-/**
-* @return 1 if the bencode object is an int; otherwise 0.
-*/
 int bencode_is_int(
     const bencode_t * be
 )
@@ -91,9 +68,6 @@ int bencode_is_int(
     return be->str && *be->str == 'i';
 }
 
-/**
-* @return 1 if the bencode object is a list; otherwise 0.
-*/
 int bencode_is_list(
     const bencode_t * be
 )
@@ -101,9 +75,6 @@ int bencode_is_list(
     return be->str && *be->str == 'l';
 }
 
-/**
-* @return 1 if the bencode object is a string; otherwise 0.
-*/
 int bencode_is_string(
     const bencode_t * be
 )
@@ -223,12 +194,6 @@ static const char *__read_string_len(
     return sp;
 }
 
-/**
-* Initialise a bencode object.
-* @param be The bencode object
-* @param str Buffer we expect input from
-* @param len Length of buffer
-*/
 void bencode_init(
     bencode_t * be,
     const char *str,
@@ -242,11 +207,6 @@ void bencode_init(
     assert(0 < be->len);
 }
 
-/**
-* Obtain value from integer bencode object.
-* @param val Long int we are writing the result to
-* @return 1 on success, otherwise 0
-*/
 int bencode_int_value(
     bencode_t * be,
     long int *val
@@ -261,9 +221,6 @@ int bencode_int_value(
     return 1;
 }
 
-/**
-* @return 1 if there is another item on this dict; otherwise 0.
-*/
 int bencode_dict_has_next(
     bencode_t * be
 )
@@ -284,13 +241,6 @@ int bencode_dict_has_next(
     return 1;
 }
 
-/**
-* Get the next item within this dictionary.
-* @param be_item Next item.
-* @param key Const pointer to key string of next item.
-* @param klen Length of the key of next item.
-* @return 1 on success; otherwise 0.
-*/
 int bencode_dict_get_next(
     bencode_t * be,
     bencode_t * be_item,
@@ -354,14 +304,6 @@ int bencode_dict_get_next(
     return 1;
 }
 
-/**
-* Get the string value from this bencode object.
-* The buffer returned is stored on the stack.
-* @param be The bencode object.
-* @param str Const pointer to the buffer.
-* @param slen Length of the buffer we are outputting.
-* @return 1 on success; otherwise 0
-*/
 int bencode_string_value(
     bencode_t * be,
     const char **str,
@@ -390,11 +332,6 @@ int bencode_string_value(
     return 1;
 }
 
-/**
-* Tell if there is another item within this list.
-* @param be The bencode object
-* @return 1 if another item exists on the list; 0 otherwise; -1 on invalid processing
-*/
 int bencode_list_has_next(
     bencode_t * be
 )
@@ -421,12 +358,6 @@ int bencode_list_has_next(
     return 1;
 }
 
-/**
-* Get the next item within this list.
-* @param be The bencode object
-* @param be_item The next bencode object that we are going to initiate.
-* @return return 0 on end; 1 on have next; -1 on error
-*/
 int bencode_list_get_next(
     bencode_t * be,
     bencode_t * be_item
@@ -483,13 +414,6 @@ void bencode_clone(
     memcpy(output, be, sizeof(bencode_t));
 }
 
-/**
-* Get the start and end position of this dictionary
-* @param be Bencode object
-* @param start Starting string
-* @param len Length of the dictionary 
-* @return 1 on success
-**/
 int bencode_dict_get_start_and_len(
     bencode_t * be,
     const char **start,
