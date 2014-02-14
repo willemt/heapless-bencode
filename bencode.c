@@ -169,7 +169,6 @@ static const char *__read_string_len(
     if (!isdigit(*sp))
         return NULL;
 
-    /* work out number */
     do
     {
         *slen *= 10;
