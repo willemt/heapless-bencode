@@ -11,7 +11,7 @@ main.c:
 test_bencode: main.c bencode.o tests/test_bencode.c tests/CuTest.c
 	$(CC) $(CCFLAGS) -Itests -o $@ $^
 	./test_bencode
-	gcov main.c test_bencode.c bencode.c
+	gcov main.c bencode.c
 
 bencode_consumer: bencode_consumer.c bencode.o
 	$(CC) $(CCFLAGS) -o $@ $^
