@@ -6,7 +6,7 @@ CHeaplessBencodeReader
 .. image:: https://coveralls.io/repos/willemt/CHeaplessBencodeReader/badge.png?branch=master
   :target: https://coveralls.io/r/willemt/CHeaplessBencodeReader?branch=master
 
-Whatk
+What?
 -----
 A bencode reader that doesn't use the heap (ie. malloc/free).
 
