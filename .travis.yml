@@ -3,4 +3,4 @@ before_install:
 script:
   - make
 after_success:
-  - coveralls --exclude lib tests bencode.h
+    - coveralls --exclude lib --exclude tests --exclude bencode.h
