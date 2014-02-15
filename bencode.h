@@ -1,3 +1,6 @@
+
+#ifndef BENCODE_H_
+#define BENCODE_H_
 #pragma once
 
 typedef struct
@@ -135,3 +138,4 @@ int bencode_dict_get_start_and_len(
     int *len
 );
 
+#endif /* BENCODE_H_ */
