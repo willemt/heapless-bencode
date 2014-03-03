@@ -32,6 +32,7 @@ static int __carry_length(
 }
 
 /**
+ * TODO: This needs to return an error code
  * @param end The point that we read out to
  * @return number represented by string */
 static long int __read_string_int(
