@@ -32,29 +32,31 @@ static int __carry_length(
 }
 
 /**
- * TODO: This needs to return an error code
  * @param end The point that we read out to
- * @return number represented by string */
+ * @param val Output of number represented by string 
+ * @return 0 if error; otherwise 1 */
 static long int __read_string_int(
     const char *sp,
-    const char **end
+    const char **end,
+    long int *val
 )
 {
-    long int val = 0;
+    *val = 0;
 
-    assert(isdigit(*sp));
+    if (!isdigit(*sp))
+        return 0;
 
     /* work out number */
     do
     {
-        val *= 10;
-        val += *sp - '0';
+        *val *= 10;
+        *val += *sp - '0';
         sp++;
     }
     while (isdigit(*sp));
 
     *end = sp;
-    return val;
+    return 1;
 }
 
 int bencode_is_dict(
@@ -148,8 +150,10 @@ static const char *__iterate_to_next_string_pos(
     else if (bencode_is_int(&iter))
     {
         const char *end;
+        long int val;
 
-        __read_string_int(&iter.str[1], &end);
+        if (0 == __read_string_int(&iter.str[1], &end, &val))
+            return NULL;
 
         assert(end[0] == 'e');
 
@@ -204,7 +208,8 @@ int bencode_int_value(
 {
     const char *end;
 
-    *val = __read_string_int(&be->str[1], &end);
+    if (0 == __read_string_int(&be->str[1], &end, val))
+        return 0;
 
     assert(end[0] == 'e');
 
