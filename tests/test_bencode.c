@@ -76,7 +76,7 @@ void TestBencodeIsInt(
 {
     bencode_t ben;
 
-    char *str = strdup("i666e");
+    char *str = strdup("i777e");
 
     bencode_init(&ben, str, strlen(str));
 
@@ -90,14 +90,14 @@ void TestBencodeIntValue(
 {
     bencode_t ben;
 
-    char *str = strdup("i666e");
+    char *str = strdup("i777e");
 
     long int val;
 
     bencode_init(&ben, str, strlen(str));
 
     bencode_int_value(&ben, &val);
-    CuAssertTrue(tc, 666 == val);
+    CuAssertTrue(tc, 777 == val);
     free(str);
 }
 
