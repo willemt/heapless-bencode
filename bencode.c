@@ -43,6 +43,15 @@ static long int __read_string_int(
 {
     *val = 0;
 
+    int sign = 1;
+
+    /* negative */
+    if ('-' == *sp)
+    {
+        sign = -1;
+        sp++;
+    }
+
     if (!isdigit(*sp))
         return 0;
 
@@ -54,6 +63,8 @@ static long int __read_string_int(
         sp++;
     }
     while (isdigit(*sp));
+
+    *val *= sign;
 
     *end = sp;
     return 1;
