@@ -428,3 +428,64 @@ int bencode_dict_get_start_and_len(
     *len = ben.str - *start + 1;
     return 0;
 }
+
+static int __validate(bencode_t *ben)
+{
+    if (bencode_is_dict(ben))
+    {
+        while (bencode_dict_has_next(ben))
+        {
+            int klen;
+            const char *key;
+            bencode_t benk;
+
+            bencode_dict_get_next(ben, &benk, &key, &klen);
+            int ret = __validate(&benk);
+            if (0 != ret)
+                return ret;
+        }
+    }
+    else if (bencode_is_list(ben))
+    {
+        while (bencode_list_has_next(ben))
+        {
+            bencode_t benl;
+
+            if (-1 == bencode_list_get_next(ben, &benl))
+                return -1;
+
+            int ret = __validate(&benl);
+            if (0 != ret)
+                return ret;
+        }
+
+    }
+    else if (bencode_is_string(ben))
+    {
+        const char *str;
+        int len;
+
+        if (0 == bencode_string_value(ben, &str, &len))
+            return -1;
+    }
+    else if (bencode_is_int(ben))
+    {
+        long int val;
+
+        if (0 == bencode_int_value(ben, &val))
+            return -1;
+    }
+    else
+        return -1;
+
+    return 0;
+}
+
+int bencode_validate(char* buf, int len)
+{
+    bencode_t ben;
+    if (0 == len)
+        return 0;
+    bencode_init(&ben, buf, len);
+    return __validate(&ben);
+}
