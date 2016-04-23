@@ -812,20 +812,33 @@ void TestBencodeDictGetStartAndLen(
 )
 {
     bencode_t ben, ben2;
-
     char *expected = "d3:keyl4:test3:fooe3:foo3:bare";
-
     char *str = strdup("d4:infod3:keyl4:test3:fooe3:foo3:baree");
-
     const char *ren;
-
     int len;
 
     bencode_init(&ben, str, strlen(str));
-
     bencode_dict_get_next(&ben, &ben2, &ren, &len);
     bencode_dict_get_start_and_len(&ben2, &ren, &len);
     CuAssertTrue(tc, len == (int)strlen(expected));
+    CuAssertTrue(tc, !strncmp(ren, expected, len));
+    free(str);
+}
+
+void TestBencodeDictGetStartAndLen2(
+    CuTest * tc
+)
+{
+    bencode_t ben, ben2;
+    char *expected = "d10:innerdict2d9:innerkey2i456ee8:innerkeyi123ee";
+    char *str = strdup("d4:testd10:innerdict2d9:innerkey2i456ee8:innerkeyi123ee3:cat3:doge");
+    const char *ren;
+    int len;
+
+    bencode_init(&ben, str, strlen(str));
+    bencode_dict_get_next(&ben, &ben2, &ren, &len);
+    bencode_dict_get_start_and_len(&ben2, &ren, &len);
+    CuAssertIntEquals(tc, len, (int)strlen(expected));
     CuAssertTrue(tc, !strncmp(ren, expected, len));
     free(str);
 }
