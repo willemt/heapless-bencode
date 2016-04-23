@@ -135,6 +135,42 @@ void TestBencodeIntValueLarge(
     free(str);
 }
 
+void TestBencodeIntValueVeryLarge(
+    CuTest * tc
+)
+{
+    bencode_t ben;
+
+    /* 1024 * 1204 * 1024 * 1024 * 1024 */
+    char *str = strdup("i1323811999842304e");
+
+    long int val;
+
+    bencode_init(&ben, str, strlen(str));
+
+    bencode_int_value(&ben, &val);
+    CuAssertTrue(tc, 1323811999842304 == val);
+    free(str);
+}
+
+void TestBencodeIntValueLargest(
+    CuTest * tc
+)
+{
+    bencode_t ben;
+
+    /* 1024 * 1204 * 1024 * 1024 * 1024 */
+    char *str = strdup("i9223372036854775807e");
+
+    long int val;
+
+    bencode_init(&ben, str, strlen(str));
+
+    bencode_int_value(&ben, &val);
+    CuAssertTrue(tc, 9223372036854775807 == val);
+    free(str);
+}
+
 void TestBencodeIsIntEmpty(
     CuTest * tc
 )
