@@ -159,7 +159,7 @@ void TestBencodeIntValueLargest(
 {
     bencode_t ben;
 
-    /* 1024 * 1204 * 1024 * 1024 * 1024 */
+    /* 2 ^ 63 - 1 */
     char *str = strdup("i9223372036854775807e");
 
     long int val;
