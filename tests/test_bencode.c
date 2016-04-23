@@ -496,6 +496,46 @@ void TestBencodeIsDictEmpty(
     free(str);
 }
 
+void TestBencodeListWithEmptyDict(
+    CuTest * tc
+)
+{
+    bencode_t ben, ben2;
+
+    char *str = strdup("ldee");
+
+    bencode_init(&ben, str, strlen(str));
+    CuAssertTrue(tc, 1 == bencode_is_list(&ben));
+    CuAssertTrue(tc, 1 == bencode_list_has_next(&ben));
+    CuAssertIntEquals(tc, 1, bencode_list_get_next(&ben, &ben2));
+    free(str);
+}
+
+void TestBencodeDictWithNestedEmptyDict(
+    CuTest * tc
+)
+{
+    bencode_t ben, ben2, ben3;
+
+    char *str = strdup("d0:ldei0eee");
+
+    const char *key;
+    int klen;
+
+    bencode_init(&ben, str, strlen(str));
+    CuAssertTrue(tc, 1 == bencode_is_dict(&ben));
+    CuAssertTrue(tc, 1 == bencode_dict_has_next(&ben));
+    CuAssertIntEquals(tc, 1, bencode_dict_get_next(&ben, &ben2, &key, &klen));
+    CuAssertTrue(tc, 1 == bencode_is_list(&ben2));
+    CuAssertIntEquals(tc, 1, bencode_list_has_next(&ben2));
+    CuAssertIntEquals(tc, 1, bencode_list_get_next(&ben2, &ben3));
+    CuAssertIntEquals(tc, 1, bencode_is_dict(&ben3));
+    CuAssertIntEquals(tc, 0, bencode_dict_has_next(&ben3));
+    CuAssertIntEquals(tc, 1, bencode_list_get_next(&ben2, &ben3));
+    CuAssertIntEquals(tc, 1, bencode_is_int(&ben3));
+    free(str);
+}
+
 void TestBencodeDictHasNext(
     CuTest * tc
 )
@@ -507,6 +547,20 @@ void TestBencodeDictHasNext(
     bencode_init(&ben, str, strlen(str));
 
     CuAssertTrue(tc, 1 == bencode_dict_has_next(&ben));
+    free(str);
+}
+
+void TestBencodeDictEmptyHasNoNext(
+    CuTest * tc
+)
+{
+    bencode_t ben;
+
+    char *str = strdup("de");
+
+    bencode_init(&ben, str, strlen(str));
+
+    CuAssertIntEquals(tc, 0, bencode_dict_has_next(&ben));
     free(str);
 }
 

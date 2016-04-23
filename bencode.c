@@ -133,6 +133,10 @@ static const char *__iterate_to_next_string_pos(
                 return NULL;
         }
 
+        /* special case for empty dict */
+        if (*iter.str == 'd' && *(iter.str + 1) == 'e')
+            return iter.str + 2;
+
         return iter.str + 1;
     }
     else if (bencode_is_list(&iter))
@@ -209,7 +213,7 @@ void bencode_init(
     be->str = be->start = str;
     be->str = str;
     be->len = len;
-    assert(0 < be->len);
+    /* assert(0 < be->len); */
 }
 
 int bencode_int_value(
@@ -241,6 +245,8 @@ int bencode_dict_has_next(
         /* at end of string */
         || *sp == '\0'
         || *sp == '\r'
+        /* empty dict */
+        || (*sp == 'd' && *(sp + 1) == 'e')
         /* at the end of the input string */
         || be->str >= be->start + be->len - 1)
     {
@@ -375,7 +381,7 @@ int bencode_list_get_next(
     sp = be->str;
 
 #if 0 /* debugging */
-    printf("%.*s\n", be->len - (be->str - be->start), be->str);
+    printf("%.*s\n", (int)(be->len - (be->str - be->start)), be->str);
 #endif
 
     /* we're at the end */
@@ -450,7 +456,9 @@ static int __validate(bencode_t *ben)
             const char *key;
             bencode_t benk;
 
-            bencode_dict_get_next(ben, &benk, &key, &klen);
+            if (0 == bencode_dict_get_next(ben, &benk, &key, &klen))
+                return -1;
+
             int ret = __validate(&benk);
             if (0 != ret)
                 return ret;
