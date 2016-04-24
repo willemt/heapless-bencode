@@ -129,7 +129,7 @@ void bencode_clone(
 * @param be Bencode object
 * @param start Starting string
 * @param len Length of the dictionary 
-* @return 1 on success
+* @return 0 on success
 */
 int bencode_dict_get_start_and_len(
     bencode_t * be,
